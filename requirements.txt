@@ -3,7 +3,7 @@ boto3
 botocore
 
 # Strands Agents
-aws-strands-agents
+strands-agents
 
 # Web framework (optional – for serving the UI or exposing endpoints)
 flask

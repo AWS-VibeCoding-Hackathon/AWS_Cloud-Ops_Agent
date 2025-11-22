@@ -1,6 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
+.DS_Store
+aws_hack/
 *$py.class
 
 # C extensions
