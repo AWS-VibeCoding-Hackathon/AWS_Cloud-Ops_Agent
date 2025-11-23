@@ -1,0 +1,49 @@
+{
+  "incident_id": "6faeddd6-7c39-4856-a50f-d7c7f4fb4117",
+  "metrics": {
+    "incident_id": "ad37c481-0124-4bf7-b01c-1f67f2e979ce",
+    "overall_severity": "ok",
+    "violations": [],
+    "summary": "No warning, high, or critical incidents detected in recent logs.",
+    "thinking_log": [
+      "Starting metrics analysis.",
+      "Computed overall severity: ok"
+    ]
+  },
+  "logs": null,
+  "rca": null,
+  "thinking_log": [
+    {
+      "incident_id": "6faeddd6-7c39-4856-a50f-d7c7f4fb4117",
+      "timestamp": "2025-11-24T08:51:42.770534+00:00",
+      "agent": "Orchestrator",
+      "stage": "start",
+      "message": "Starting orchestrator cycle. Window=120 minutes, threshold=warning."
+    },
+    {
+      "incident_id": "6faeddd6-7c39-4856-a50f-d7c7f4fb4117",
+      "timestamp": "2025-11-24T08:51:44.739899+00:00",
+      "agent": "Orchestrator",
+      "stage": "metrics_evaluated",
+      "message": "Metrics analysis severity=ok."
+    },
+    {
+      "incident_id": "6faeddd6-7c39-4856-a50f-d7c7f4fb4117",
+      "timestamp": "2025-11-24T08:51:44.739926+00:00",
+      "agent": "Orchestrator",
+      "stage": "no_escalation",
+      "message": "Severity below threshold. Skipping log + RCA analysis."
+    },
+    {
+      "incident_id": "6faeddd6-7c39-4856-a50f-d7c7f4fb4117",
+      "timestamp": "2025-11-24T08:51:44.739932+00:00",
+      "agent": "Orchestrator",
+      "stage": "end",
+      "message": "Completed orchestrator cycle.",
+      "extra": {
+        "incident_id": "6faeddd6-7c39-4856-a50f-d7c7f4fb4117"
+      }
+    }
+  ],
+  "incident_log_path": "incident_logs/6faeddd6-7c39-4856-a50f-d7c7f4fb4117.json"
+}

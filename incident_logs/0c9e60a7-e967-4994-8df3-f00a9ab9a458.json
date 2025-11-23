@@ -1,0 +1,77 @@
+{
+  "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+  "entries": [
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:37:40.042635+00:00",
+      "agent": "Orchestrator",
+      "stage": "start",
+      "message": "Starting orchestrator cycle. Window=120 minutes, threshold=warning."
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:37:42.269182+00:00",
+      "agent": "Orchestrator",
+      "stage": "metrics_evaluated",
+      "message": "Metrics analysis severity=warning."
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:37:43.322444+00:00",
+      "agent": "LogAnalysisAgent",
+      "stage": "start",
+      "message": "Starting log analysis from orchestrator escalation."
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:37:44.354012+00:00",
+      "agent": "LogAnalysisAgent",
+      "stage": "end",
+      "message": "Completed log analysis. Computed severity=warning."
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:37:44.354043+00:00",
+      "agent": "RCAAgent",
+      "stage": "start",
+      "message": "Starting RCA analysis."
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:37:44.354190+00:00",
+      "agent": "RCAAgent",
+      "stage": "call_llm",
+      "message": "Calling Titan model amazon.titan-text-express-v1 for RCA synthesis."
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:38:01.662556+00:00",
+      "agent": "RCAAgent",
+      "stage": "end",
+      "message": "Completed RCA analysis.",
+      "extra": {
+        "incident_summary_preview": ", 12 critical\n\nThe most common log level violations were:\n- 287 warning (AuthorizationPatternShift)\n- 12 critical (ReservationDurationShift)\n\nThe most common log level violations were:\n- 287 warning ("
+      }
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:38:01.662613+00:00",
+      "agent": "Orchestrator",
+      "stage": "rca_complete",
+      "message": "RCA computed after metrics escalation.",
+      "extra": {
+        "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458"
+      }
+    },
+    {
+      "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458",
+      "timestamp": "2025-11-24T09:38:01.662623+00:00",
+      "agent": "Orchestrator",
+      "stage": "end",
+      "message": "Completed orchestrator cycle.",
+      "extra": {
+        "incident_id": "0c9e60a7-e967-4994-8df3-f00a9ab9a458"
+      }
+    }
+  ]
+}

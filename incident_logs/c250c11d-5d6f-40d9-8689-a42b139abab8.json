@@ -1,0 +1,36 @@
+{
+  "incident_id": "c250c11d-5d6f-40d9-8689-a42b139abab8",
+  "entries": [
+    {
+      "incident_id": "c250c11d-5d6f-40d9-8689-a42b139abab8",
+      "timestamp": "2025-11-24T08:59:12.186839+00:00",
+      "agent": "Orchestrator",
+      "stage": "start",
+      "message": "Starting orchestrator cycle. Window=120 minutes, threshold=warning."
+    },
+    {
+      "incident_id": "c250c11d-5d6f-40d9-8689-a42b139abab8",
+      "timestamp": "2025-11-24T08:59:14.326322+00:00",
+      "agent": "Orchestrator",
+      "stage": "metrics_evaluated",
+      "message": "Metrics analysis severity=ok."
+    },
+    {
+      "incident_id": "c250c11d-5d6f-40d9-8689-a42b139abab8",
+      "timestamp": "2025-11-24T08:59:14.326364+00:00",
+      "agent": "Orchestrator",
+      "stage": "no_escalation",
+      "message": "Severity below threshold. Skipping log + RCA analysis."
+    },
+    {
+      "incident_id": "c250c11d-5d6f-40d9-8689-a42b139abab8",
+      "timestamp": "2025-11-24T08:59:14.326370+00:00",
+      "agent": "Orchestrator",
+      "stage": "end",
+      "message": "Completed orchestrator cycle.",
+      "extra": {
+        "incident_id": "c250c11d-5d6f-40d9-8689-a42b139abab8"
+      }
+    }
+  ]
+}

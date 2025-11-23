@@ -1,20 +1,18 @@
 # AWS SDK
-boto3
-botocore
+boto3==1.34.131
+botocore==1.34.131
 
 # Strands Agents
 strands-agents
 
-# Web framework (optional – for serving the UI or exposing endpoints)
-flask
+# Web framework (optional)
+Flask==3.0.2
 
 # JSON + data utilities
 pydantic
-python-dotenv
+python-dotenv==1.0.1
 
 # Metrics + logging helpers
-requests
-tqdm
+requests==2.31.0
+tqdm==4.66.1
 
-# For local development convenience
-watchdog
