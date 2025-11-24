@@ -1,105 +1,188 @@
+# agents/log_analysis_agent.py
 import json
-import os
 import boto3
+import os
+from typing import Any, Dict, List, Optional
+
+from strands import Agent
+from incidents.incident_log import IncidentLogger
 
 
-class LogAnalysisAgent:
+class LogAnalysisAgent(Agent):
     """
-    Log Analysis Agent using Amazon Bedrock (Claude 3 Haiku by default).
-    Takes structured CloudWatch log events and summarizes them.
+    Log Analysis Agent using Amazon Titan Text Lite.
+    Now also writes a thinking log into IncidentLogger.
     """
 
-    def __init__(self, model_id: str | None = None, region: str | None = None) -> None:
-        # Default to Claude 3 Haiku unless overridden
+    def __init__(self, model_id: Optional[str] = None) -> None:
+        super().__init__(name="LogAnalysisAgent")
+        self.agent_name = "LogAnalysisAgent"
+
         self.model_id = (
             model_id
-            or os.getenv("BEDROCK_MODEL_ID")
-            or "anthropic.claude-3-haiku-20240307-v1:0"
+            or os.getenv("BEDROCK_MODEL_ID_LOGS")
+            or "amazon.titan-text-lite-v1"
         )
 
-        # Bedrock region: explicit env, else AWS_DEFAULT_REGION, else us-east-1
         self.region = (
-            region
-            or os.getenv("AWS_DEFAULT_REGION_BEDROCK")
+            os.getenv("AWS_DEFAULT_REGION_BEDROCK")
             or os.getenv("AWS_DEFAULT_REGION")
             or "us-east-1"
         )
 
-        # Bedrock runtime client
         self.client = boto3.client("bedrock-runtime", region_name=self.region)
 
-    def analyze(self, logs: list) -> str:
+    def analyze(
+        self,
+        logs: List[Dict[str, Any]],
+        incident_logger: IncidentLogger,
+    ) -> Dict[str, Any]:
         """
-        Summarize logs and generate insights using Bedrock Claude 3.
-        Returns a human readable summary string.
+        Return:
+        {
+          "incident_id": ...,
+          "summary": "...",
+          "thinking_log": [...],
+        }
         """
+
+        local_trace: List[str] = []
 
         if not logs:
-            return "No log entries found in the provided time window."
+            msg = "No log entries found in the provided time window."
+            incident_logger.add_entry(
+                agent=self.agent_name,
+                stage="start",
+                message=msg,
+            )
+            local_trace.append(msg)
+            return {
+                "incident_id": incident_logger.incident_id,
+                "summary": msg,
+                "thinking_log": local_trace,
+            }
 
-        prompt = f"""
-You are an expert cloud operations incident analysis assistant.
+        incident_logger.add_entry(
+            agent=self.agent_name,
+            stage="start",
+            message="Starting log analysis.",
+        )
+        local_trace.append("Starting log analysis.")
 
-Analyze the CloudWatch logs below and summarize:
-- Any anomalies
-- Any warnings or slowdowns
-- Any suspicious patterns
-- Any symptoms of degradation
-- Any likely root causes
+        safe_logs = self._prepare_logs_for_prompt(logs, local_trace, incident_logger)
+        logs_json = json.dumps(safe_logs, separators=(",", ":"))
 
-Return a clear summary in bullet points.
+        prompt = (
+            "You are an SRE assistant. Given these recent CloudWatch log events "
+            "from an ecommerce system, summarize:\n"
+            "- key anomalies or errors\n"
+            "- signs of performance issues or timeouts\n"
+            "- most likely impacted components\n"
+            "- 3 to 5 concrete next steps for the on call engineer.\n\n"
+            "Be concise.\n\n"
+            f"Logs JSON:\n{logs_json}"
+        )
 
-Logs:
-{json.dumps(logs, indent=2)}
-        """.strip()
+        MAX_PROMPT_CHARS = 3500
+        if len(prompt) > MAX_PROMPT_CHARS:
+            head, _ = prompt.split("Logs JSON:", 1)
+            trimmed_logs_json = logs_json[: MAX_PROMPT_CHARS - len(head) - 50]
+            prompt = head + "Logs JSON:\n" + trimmed_logs_json
+            local_trace.append(
+                "Prompt length exceeded limit. Trimmed logs payload further."
+            )
+            incident_logger.add_entry(
+                agent=self.agent_name,
+                stage="prompt_trim",
+                message="Trimmed logs payload due to size.",
+            )
 
-        body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 400,
-            "temperature": 0.2,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt,
-                        }
-                    ],
-                }
-            ],
-        }
+        body = json.dumps(
+            {
+                "inputText": prompt,
+                "textGenerationConfig": {
+                    "maxTokenCount": 400,
+                    "temperature": 0.2,
+                    "topP": 0.9,
+                },
+            }
+        )
 
-        print("\n===== SENDING TO BEDROCK (CLAUDE 3) =====\n")
+        incident_logger.add_entry(
+            agent=self.agent_name,
+            stage="call_llm",
+            message=f"Sending logs summary request to model {self.model_id}.",
+        )
+        local_trace.append(f"Calling Titan model {self.model_id} for log summary.")
 
         response = self.client.invoke_model(
             modelId=self.model_id,
             contentType="application/json",
             accept="application/json",
-            body=json.dumps(body),
+            body=body,
         )
 
-        raw_body = response["body"].read().decode("utf-8")
-
-        # Parse Claude 3 style response
+        payload = json.loads(response["body"].read())
         try:
-            data = json.loads(raw_body)
-        except json.JSONDecodeError:
-            # Fallback: just return raw text if JSON parsing fails
-            return raw_body
+            result = payload.get("results", [])[0]
+            summary = result.get("outputText", "").strip() or str(payload)
+        except Exception:
+            summary = str(payload)
 
-        # Claude 3 responses put text in content list blocks
-        chunks: list[str] = []
-        for block in data.get("content", []):
-            if block.get("type") == "text":
-                chunks.append(block.get("text", ""))
+        incident_logger.add_entry(
+            agent=self.agent_name,
+            stage="end",
+            message="Completed log analysis.",
+            extra={"summary_preview": summary[:200]},
+        )
+        local_trace.append("Completed log analysis.")
 
-        if not chunks:
-            # Fallback again if structure is unexpected
-            return raw_body
+        return {
+            "incident_id": incident_logger.incident_id,
+            "summary": summary,
+            "thinking_log": local_trace,
+        }
 
-        summary = "".join(chunks).strip()
+    def _prepare_logs_for_prompt(
+        self,
+        logs: List[Dict[str, Any]],
+        local_trace: List[str],
+        incident_logger: IncidentLogger,
+        max_events: int = 10,
+    ) -> List[Dict[str, Any]]:
+        subset = logs[-max_events:]
+        local_trace.append(f"Trimmed logs to last {len(subset)} events.")
+        incident_logger.add_entry(
+            agent=self.agent_name,
+            stage="trim_logs",
+            message=f"Trimmed logs to last {len(subset)} events for LLM input.",
+        )
 
-        print("===== BEDROCK RESPONSE RECEIVED =====\n")
+        sanitized: List[Dict[str, Any]] = []
 
-        return summary
+        for e in subset:
+            if isinstance(e, dict):
+                minimal = {}
+                for key in [
+                    "timestamp",
+                    "time",
+                    "level",
+                    "logStreamName",
+                    "message",
+                    "event",
+                    "service",
+                    "component",
+                    "scenario",
+                    "environment",
+                ]:
+                    if key in e:
+                        minimal[key] = e[key]
+
+                if not minimal and "raw" in e:
+                    minimal["raw"] = e["raw"]
+
+                sanitized.append(minimal or e)
+            else:
+                sanitized.append({"raw": str(e)})
+
+        return sanitized

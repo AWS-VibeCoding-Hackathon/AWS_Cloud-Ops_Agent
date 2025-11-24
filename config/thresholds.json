@@ -1,0 +1,46 @@
+{
+    "lambda_metrics": {
+        "errors": {
+            "warn_sum": 1,
+            "crit_sum": 5
+        },
+        "throttles": {
+            "warn_sum": 1,
+            "crit_sum": 3
+        },
+        "duration_ms": {
+            "warn_avg": 3000,
+            "crit_avg": 8000
+        }
+    },
+    "custom_metrics": {
+        "CPUUtilization": {
+            "warn_avg": 60,
+            "crit_avg": 85
+        },
+        "MemoryUsageMB": {
+            "warn_avg": 180,
+            "crit_avg": 240
+        },
+        "OrderLatencyMS": {
+            "warn_avg": 700,
+            "crit_avg": 1500
+        },
+        "InventoryDBLatencyMS": {
+            "warn_avg": 400,
+            "crit_avg": 900
+        },
+        "RetryCount": {
+            "warn_avg": 1,
+            "crit_avg": 3
+        },
+        "DownstreamTimeouts": {
+            "warn_avg": 1,
+            "crit_avg": 2
+        },
+        "ErrorRate": {
+            "warn_avg": 0.01,
+            "crit_avg": 0.05
+        }
+    }
+}
